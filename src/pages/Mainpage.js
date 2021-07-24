@@ -5,7 +5,11 @@ import { MainpageContainer, MainpageWrapper,
     SearchTextWrapper, SearchButtonWrapper,
     MainpageH1, Mainpagetextwrapper,
     Mainpagetemp, MainpageWeather,
-    MainpageText, Loadingdiv} from '../styles/MainpageStyles';
+    MainpageText, Loadingdiv,
+    WeatherContainer, WeatherWrapper,
+    WeatherLeft, WeatherRight,
+    WeatherDaily,
+    WeatherWrapper2} from '../styles/MainpageStyles';
 import TextField from '@material-ui/core/TextField';
 import { makeStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
@@ -13,6 +17,11 @@ import { motion } from 'framer-motion';
 import { Keyboard } from '@material-ui/icons';
 import axios from 'axios';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import OpacityIcon from '@material-ui/icons/Opacity';
+import CloudIcon from '@material-ui/icons/Cloud';
+import FlareIcon from '@material-ui/icons/Flare';
+import WavesIcon from '@material-ui/icons/Waves';
+
 
 
 const useStyles = makeStyles((theme) => ({
@@ -35,10 +44,42 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: '5px',
         paddingLeft: '10px',
     },
+    icon:{
+        width: '120px',
+        height: '120px',
+        [theme.breakpoints.down('xs')]: {
+            width: '50px',
+            height: '50px',
+        },
+        [theme.breakpoints.up('sm')]: {
+            width: '75px',
+            height: '75px',
+        },
+        [theme.breakpoints.up('md')]: {
+            width: '100px',
+            height: '100px',
+        },
+    },
+    icons:{
+        margin: '0 5px',
+        fontSize: '15px',
+    },
+    temp:{
+        marginRight: '10px',
+    },
+    disfont:{
+        [theme.breakpoints.down('xs')]: {
+            fontSize: 0,
+        },
+        [theme.breakpoints.up('sm')]: {
+            fontSize: '14px',
+        },
+    },
   }));
 
-const Mainpage = ({ keyApi }) => {
+const Mainpage = ({ keyApi, hourly }) => {
     const [weather, setWeather] = useState(null);
+    const [weatherda, setWeatherda] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [city, setCity] = useState('');
@@ -54,9 +95,14 @@ const Mainpage = ({ keyApi }) => {
                 setWeather(null);
                 setLoading(true);
 
-                const responce = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${keyApi}`);
+                const responce = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${keyApi}`);
                 
                 await setWeather(responce.data);
+
+                const responce2 = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${keyApi}`);
+                
+                await setWeatherda(responce2.data);
+
             } catch (e) {
                 setError(e);
             }
@@ -104,27 +150,84 @@ const Mainpage = ({ keyApi }) => {
                         {weather && 
                         <Mainpagetextwrapper>
                             <MainpageWeather>
-                                <MainpageH1>
-                                    {weather.weather[0].main}
-                                </MainpageH1>
-                                <MainpageH1>
-                                    {Math.floor(weather.main.temp)}°F
-                                </MainpageH1>
-                                    <MainpageText>
-                                        humidity : {weather.main.humidity}%
-                                    </MainpageText>
-                                    <MainpageText>
-                                        wind speed : {weather.wind.speed} m/s
-                                    </MainpageText>
-                                    <MainpageText>
-                                        feels like : {Math.floor(weather.main.feels_like)}°
-                                    </MainpageText>
-                                    <MainpageText>
-                                        temp min : {Math.floor(weather.main.temp_min)}°
-                                    </MainpageText>
-                                    <MainpageText>
-                                        temp max : {Math.floor(weather.main.temp_max)}°
-                                    </MainpageText>
+                                <WeatherContainer>
+                                    <WeatherWrapper>
+                                        <WeatherLeft>
+                                        <MainpageText>
+                                            {weather.city.name}
+                                        </MainpageText>
+                                        <MainpageH1>
+                                            {Math.floor(weatherda.main.temp)}°F
+                                        </MainpageH1>
+                                        <MainpageText>
+                                            {weatherda.weather[0].main}
+                                        </MainpageText>
+                                        </WeatherLeft>
+                                        <WeatherLeft>
+                                            <img className={classes.icon} src={`http://openweathermap.org/img/wn/${weatherda.weather[0].icon}@2x.png`} />
+                                        <MainpageText>
+                                            {Math.floor(weatherda.main.temp_min)}/{Math.floor(weatherda.main.temp_max)}
+                                        </MainpageText>
+                                        </WeatherLeft>
+
+                                        <WeatherRight>
+                                        <MainpageText>
+                                            <FlareIcon className={classes.icons}/> <text className={classes.disfont}>Feels like</text> : {weatherda.main.feels_like}°F
+                                        </MainpageText>
+                                        <MainpageText>
+                                            <OpacityIcon className={classes.icons}/> <text className={classes.disfont}>Humidity</text> : {weatherda.main.humidity} %
+                                        </MainpageText>
+                                        <MainpageText>
+                                            <WavesIcon className={classes.icons}/> <text className={classes.disfont}> Wind</text> : {weatherda.wind.speed} m/s
+                                        </MainpageText>
+                                        <MainpageText>
+                                            <CloudIcon className={classes.icons}/> <text className={classes.disfont}>Cloud</text> : {weatherda.clouds.all} %
+                                        </MainpageText>
+                                        </WeatherRight>
+                                    </WeatherWrapper>
+                                </WeatherContainer>
+                                <WeatherContainer>
+                                    <WeatherWrapper2>
+                                        <WeatherDaily>
+                                            <MainpageText>
+                                                Morning
+                                            </MainpageText>
+                                            <MainpageH1>
+                                                {Math.floor(weather.list[0].main.temp)}°F
+                                            </MainpageH1>
+                                            <img className={classes.icon} src={`http://openweathermap.org/img/wn/${weather.list[0].weather[0].icon}@2x.png`} />
+                                        </WeatherDaily>  
+                                        <WeatherDaily>
+                                            <MainpageText>
+                                                Noon
+                                            </MainpageText>
+                                            <MainpageH1>
+                                                {Math.floor(weather.list[2].main.temp)}°F
+                                            </MainpageH1>
+                                            <img className={classes.icon} src={`http://openweathermap.org/img/wn/${weather.list[2].weather[0].icon}@2x.png`} />
+                                        </WeatherDaily>  
+                                        <WeatherDaily>
+                                            <MainpageText>
+                                                evening
+                                            </MainpageText>
+                                            <MainpageH1>
+                                                {Math.floor(weather.list[4].main.temp)}°F
+                                            </MainpageH1>
+                                            <img className={classes.icon} src={`http://openweathermap.org/img/wn/${weather.list[4].weather[0].icon}@2x.png`} />
+
+                                        </WeatherDaily>  
+                                        <WeatherDaily>
+                                            <MainpageText>
+                                                Midnight
+                                            </MainpageText>
+                                            <MainpageH1>
+                                                {Math.floor(weather.list[6].main.temp)}°F
+                                            </MainpageH1>
+                                            <img className={classes.icon} src={`http://openweathermap.org/img/wn/${weather.list[6].weather[0].icon}@2x.png`} />
+
+                                        </WeatherDaily>                                        
+                                    </WeatherWrapper2>
+                                </WeatherContainer>
                             </MainpageWeather>
                         </Mainpagetextwrapper>
                         }
